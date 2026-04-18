@@ -22,7 +22,7 @@ public sealed class Reservation : Entity<Guid>
     public DateTime? CompletedAtUtc { get; private set; }
     public DateTime? CancelledAtUtc { get; private set; }
 
-    public byte[] RowVersion { get; private set; } = default!;
+    public byte[] RowVersion { get; private set; } = new byte[8];
 
     public Customer Customer { get; private set; } = default!;
     public Driver? Driver { get; private set; }

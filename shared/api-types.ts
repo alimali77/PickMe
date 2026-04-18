@@ -50,3 +50,97 @@ export interface CurrentUserDto {
   mustChangePassword: boolean;
   emailConfirmed: boolean;
 }
+
+// ---------- Reservations ----------
+export type ReservationStatusLiteral = 'Pending' | 'Assigned' | 'OnTheWay' | 'Completed' | 'Cancelled';
+export type ServiceTypeLiteral = 'Driver' | 'Valet';
+export type CancelledByLiteral = 'Customer' | 'Admin' | 'System';
+
+export interface CreateReservationRequest {
+  serviceType: ServiceTypeLiteral;
+  reservationDateTimeUtc: string;
+  address: string;
+  lat: number;
+  lng: number;
+  note?: string;
+  placeSelectedFromAutocomplete: boolean;
+}
+
+export interface ReservationSummary {
+  id: string;
+  status: ReservationStatusLiteral;
+  serviceType: ServiceTypeLiteral;
+  reservationDateTimeUtc: string;
+  address: string;
+  lat: number;
+  lng: number;
+  note?: string | null;
+  createdAtUtc: string;
+}
+
+export interface ReservationDetail {
+  id: string;
+  status: ReservationStatusLiteral;
+  serviceType: ServiceTypeLiteral;
+  reservationDateTimeUtc: string;
+  address: string;
+  lat: number;
+  lng: number;
+  note?: string | null;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  driverId?: string | null;
+  driverName?: string | null;
+  driverPhone?: string | null;
+  driverAverageRating?: number | null;
+  cancellationReason?: string | null;
+  cancelledBy?: CancelledByLiteral | null;
+  assignedAtUtc?: string | null;
+  startedAtUtc?: string | null;
+  completedAtUtc?: string | null;
+  cancelledAtUtc?: string | null;
+  createdAtUtc: string;
+  hasRating: boolean;
+  ratingScore?: number | null;
+  ratingEditable: boolean;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface DriverSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  averageRating: number;
+  totalTrips: number;
+  status: 'Active' | 'Inactive';
+}
+
+export interface FaqDto {
+  id: string;
+  question: string;
+  answer: string;
+  displayOrder: number;
+}
+
+export interface RateReservationRequest {
+  score: number;
+  comment?: string;
+}
+
+export interface ContactFormRequest {
+  firstName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}

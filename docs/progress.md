@@ -73,7 +73,67 @@
 
 **Toplam: 76 backend + 12 frontend = 88 test yeşil.**
 
-## Kalan İş (Brief Bölüm 20 + Plan Faz 4-9)
+### ✅ Faz 4 — Rezervasyon + Rating + Public uçları
+
+**Backend application katmanı:**
+- `IReservationService` + `ReservationService`: 13 public operasyon (customer list/detail/create/cancel; admin list paging/filter/search/detail/assign/cancel/export; driver tasks/detail/start/complete; active drivers listesi).
+- `IRatingService` + `RatingService`: Rate + EditAsync, unique `ReservationId` constraint ile çift puan 409, 24h edit window, concurrency-safe çift-save ile driver `AverageRating` + `TotalTrips` yeniden hesaplama.
+- `IPublicService` + `PublicService`: FAQ listesi (public), Contact form submit.
+- 6 FluentValidation kuralı: CreateReservation (±30dk, Türkiye bbox, adres autocomplete flag), AssignDriver, CancelReservation (müşteri), AdminCancelReservation (sebep zorunlu), RateReservation (1-5), ContactForm.
+
+**API endpoints (12 yeni):**
+- Customer: `POST /api/reservations`, `GET /api/reservations`, `GET /api/reservations/:id`, `POST /api/reservations/:id/cancel`, `POST/PATCH /api/reservations/:id/rating`.
+- Admin: `GET /api/admin/reservations` (filter/search/paging), `GET .../:id`, `POST .../:id/assign`, `POST .../:id/cancel`, `GET .../export` (CSV), `GET /api/admin/drivers/active`.
+- Driver: `GET /api/driver/tasks`, `GET .../:id`, `POST .../:id/start`, `POST .../:id/complete`.
+- Public: `GET /api/faqs`, `POST /api/contact`.
+- Tüm endpoint'ler role-based authorize (`[Authorize(Roles=...)]`), IDOR engeli resource-level kontrol ile.
+
+**Mail tetikleyicileri (IEmailQueue üzerinden asenkron):**
+- Yeni rezervasyon → tüm aktif `AdminNotificationRecipient`lere (en az 1 aktif yoksa rezervasyon oluşmaz — brief gereği).
+- Şoför atandı → müşteriye (şoför adı + telefon) + şoföre (müşteri bilgisi + adres).
+- Müşteri iptal → admin grubuna.
+- Admin iptal → müşteriye (sebep) + şoföre.
+- Tamamlandı → müşteriye (değerlendirme davet).
+- Mail içerikleri HTML + plain text, tüm kullanıcı input'ları `HtmlEncoder` ile escape (XSS engeli).
+
+**Integration testleri (21 yeni):**
+- Happy path: create → assign → start → complete + her aşamada doğru mail
+- Validation: tarih çok yakın, Türkiye dışı koordinat, autocomplete seçilmedi, iptal sebebi boş
+- Yetkilendirme: başka müşterinin rezervasyonuna erişim → 404 (IDOR), başka şoförün görevine erişim → 404, atama yetkisi olmayan kullanıcı → 403
+- State machine: Completed'ı admin iptal → 409, Assigned'da müşteri iptal → 409
+- Reassign: aktif atama üzerine yeni şoför atanabilir
+- Rating: aynı rezervasyona 2. puan → 409, tamamlanmamış rezervasyon → reddedilir, flag'li puan ortalama dışı, edit window, inactive şoföre atama reddi, no-active-recipient → yeni rezervasyon engellendi
+- Listing: müşteri sadece kendi, admin paging + status filter
+
+**Frontend (React + Tailwind):**
+- `reservationsApi` client — customer + admin + driver endpoint'lerini kapsar.
+- `LocationPicker` komponent — Google Places Autocomplete stub'u (API key geldiğinde `@react-google-maps/api` ile değiştirilecek, interface aynı kalır).
+- Sayfalar:
+  - `/rezervasyon` — React Hook Form + Zod, hizmet türü segment, datetime-local input (min=now+30dk), konum seçici, not + karakter sayacı, başarı ekranı.
+  - `/hesabim/rezervasyonlar` — TanStack Query liste, status badge, empty state.
+  - `/hesabim/rezervasyonlar/:id` — detay + iptal modali + değerlendirme modalı (1-5 yıldız + opsiyonel yorum).
+  - `/hesabim/profil` — bilgi güncelleme + şifre değiştirme.
+  - `/driver` — mobil odaklı görev listesi, 60s auto-refresh.
+  - `/driver/gorevler/:id` — müşteri tel tek-tık arama (`tel:`), "Haritada Aç" Google Maps yeni sekme, sticky alt butonlar (Yola Çıktım / Tamamlandı), mobile bottom nav.
+  - `/driver/sifre-degistir` — ilk girişte zorunlu şifre değişikliği.
+  - `/admin` — dashboard widget'ları + son rezervasyonlar listesi.
+  - `/admin/rezervasyonlar` — filter (Pending/Assigned/OnTheWay/Completed/Cancelled) + search + paging + CSV export link.
+  - `/admin/rezervasyonlar/:id` — detay + şoför atama modal (aktif şoförler + ortalama puan) + iptal modal (sebep zorunlu) + zaman çizelgesi + müşteri puanı.
+- `RequireAuth` komponent — role-based guard, şoför için `MustChangePassword` zorunlu yönlendirme.
+- `StatusBadge` — 5 durum için semantik renklendirme.
+- Tüm modallar `@radix-ui/react-dialog` ile, ARIA + focus trap + ESC kapatma.
+- Yeni UI primitifleri: `Dialog`, `Badge`, `Textarea`, `FormField`.
+
+**Smoke test (LocalDB canlı):**
+- Backend `http://localhost:5080` — LocalDB'ye bağlı, `/health` ok.
+- FAQ endpoint anonymous 200.
+- Reservations endpoint auth olmadan → 401.
+- Register → 201, DB'ye kullanıcı + email verification token yazıldı.
+- Validation hatası frontend Zod ile birebir aynı mesaj: `"Geçerli bir e-posta adresi giriniz."`
+
+**Toplam: 109 test yeşil (61 unit + 3 arch + 33 integration + 12 frontend) + LocalDB'de 14 tablo ayakta + live API + real data.**
+
+## Kalan İş (Brief Bölüm 20 + Plan Faz 5-9)
 
 Plan dosyasındaki yol haritası:
 

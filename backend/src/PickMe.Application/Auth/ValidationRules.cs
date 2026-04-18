@@ -69,4 +69,18 @@ public static class ValidationMessages
     public const string MustChangePassword = "Devam etmeden önce şifrenizi değiştirmelisiniz.";
     public const string NotAuthenticated = "Bu işlem için giriş yapmış olmanız gerekir.";
     public const string AccountInactive = "Hesabınız devre dışı. Lütfen yönetimle iletişime geçiniz.";
+    public const string ReservationAddressRequired = "Lütfen adresi listeden seçiniz.";
+    public const string ReservationOutsideTurkey = "Konum Türkiye sınırları içinde olmalıdır.";
+    public const string NoteTooLong = "Not en fazla 500 karakter olabilir.";
+    public const string RatingScoreRange = "Puan 1 ile 5 arasında olmalıdır.";
+    public const string RatingAlreadyGiven = "Bu rezervasyon için zaten puan verdiniz.";
+    public const string RatingEditWindowExpired = "Puan oluşturulduktan 24 saat sonra düzenlenemez.";
+    public const string ReservationNotFound = "Rezervasyon bulunamadı.";
+    public const string AccessDenied = "Bu işlem için yetkiniz yok.";
+    public const string DriverNotFound = "Şoför bulunamadı.";
+    public const string DriverInactive = "Şoför aktif değil, atama yapılamaz.";
+    public const string NoActiveRecipients = "Aktif bir yönetici bildirim adresi bulunmadığından rezervasyon alınamıyor. Lütfen yönetimle iletişime geçiniz.";
+
+    public static string ReservationDateTooSoon() =>
+        $"Rezervasyon şu andan en az {ValidationRules.ReservationMinMinutesAhead} dakika sonraya olmalıdır.";
 }
