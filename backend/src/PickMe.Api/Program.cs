@@ -92,6 +92,9 @@ app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timeUtc = DateTime.UtcNow }));
 
+// Startup: migration + initial admin seed
+await PickMe.Infrastructure.Persistence.DatabaseInitializer.InitializeAsync(app.Services);
+
 app.Run();
 
 public partial class Program;

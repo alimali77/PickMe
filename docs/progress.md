@@ -133,7 +133,53 @@
 
 **Toplam: 109 test yeşil (61 unit + 3 arch + 33 integration + 12 frontend) + LocalDB'de 14 tablo ayakta + live API + real data.**
 
-## Kalan İş (Brief Bölüm 20 + Plan Faz 5-9)
+### ✅ Faz 5 — Admin yönetim modülleri
+
+**Startup seed hook:**
+- `DatabaseInitializer.InitializeAsync`: startup'ta pending migration'ları uygular + env var'dan ilk admin hesabını seed'ler + ilk aktif `AdminNotificationRecipient`'ı oluşturur.
+- `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_ADMIN_FULL_NAME` — dev'de `appsettings.Development.json` ile `admin@pickme.local` / `Admin123!Change` hazır.
+
+**Backend — 8 yeni servis + 24 yeni endpoint:**
+- `IDriverManagementService` — list (search + paging), detail (son 5 rating + aktif görev sayısı), create (auto şifre + mail), update, set-active (aktif görev varsa blok), reset-password (yeni şifre + `MustChangePassword=true` + refresh revoke + mail), soft-delete.
+- `IRecipientsService` — CRUD; **son aktif kaydın deaktive/silinmesi reddedilir** (brief invariant).
+- `IFaqManagementService` — admin CRUD; public `GET /api/faqs` zaten vardı.
+- `IContactMessagesService` — liste (unreadOnly filter + paging) + okundu işareti.
+- `ICustomerAdminService` — liste (search + rezervasyon sayısı), detail (son 10 rezervasyon), set-active (pasifleştirme tüm refresh token'ları revoke eder).
+- `IRatingAdminService` — liste (filter: driverId, minScore, maxScore), flag + unflag; flag değişiminde şoför ortalaması anında yeniden hesaplanır.
+- `IAdminUsersService` — CRUD; **kendini silme ve son admin silme reddedilir**.
+- `ISystemSettingsService` — key-value upsert + hassas değer maskeleme + public whitelist (WhatsApp, iletişim açık; API key'ler gizli).
+
+**Integration testleri (18 yeni) — toplam 51:**
+- Driver: create + mail, duplicate email, deactivate/delete with active assignment blocked, reset → mail + MustChangePassword.
+- Recipients: last active deactivate/delete reddedildi, duplicate reddedildi, inactive sil OK.
+- FAQ: CRUD roundtrip.
+- Admin users: cannot delete self, cannot delete last admin, can delete when 2+ admins.
+- Rating flag → driver average recompute (5+1 → flag 1 → ortalama 5'e çıktı + TotalTrips 1'e düştü).
+- Customer list with reservation count.
+- Settings: sensitive mask + public whitelist.
+
+**Frontend — 8 yeni admin sayfası + admin nav + routes:**
+- `/admin/soforler` — liste + arama + ekleme modal (opsiyonel başlangıç şifresi) + düzenle + dropdown menü (aktif/pasif, şifre sıfırla, sil) + sayfalama.
+- `/admin/musteriler` — read-only liste + arama + rezervasyon sayısı.
+- `/admin/degerlendirmeler` — liste + puan filter + flag modal (sebep zorunlu) + unflag.
+- `/admin/mesajlar` — iletişim form mesajları + okunmamış filter + tıklayınca auto mark-read + mailto/tel.
+- `/admin/sss` — CRUD, display order, aktif/pasif toggle.
+- `/admin/bildirim-alicilari` — CRUD, toggle, son aktif koruması (backend enforce).
+- `/admin/yoneticiler` — CRUD, kendini sil disabled UI + backend guard.
+- `/admin/ayarlar` — gruplu (İletişim + Entegrasyonlar), hassas alanlar maskelenmiş gelir, boş bırakılırsa değişmez.
+- Admin nav 10 link + mobil drawer + sticky sidebar.
+- `admin-api.ts` — tüm yönetim endpoint'leri için client.
+- `DropdownMenu` (Radix), `EmptyState`, `PageHeader`, `SkeletonRows` primitifleri.
+
+**Live smoke test (LocalDB + backend — gerçek):**
+- Startup seed: `admin@pickme.local` Role=Admin + aynı email AdminNotificationRecipient aktif ✓.
+- Admin login → JWT + `/me` doğru isim/rol ✓.
+- Driver create → 201, `mustChangePassword=true`, mail kuyruğa atıldı ✓.
+- Son aktif recipient deaktive → **`recipient.last_active`** ile reddedildi ✓.
+
+**Toplam: 127 otomatik test yeşil (61 unit + 3 arch + 51 integration + 12 frontend) + 36 endpoint + 14 tablo canlı DB.**
+
+## Kalan İş (Brief Bölüm 20 + Plan Faz 6-9)
 
 Plan dosyasındaki yol haritası:
 

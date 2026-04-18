@@ -31,6 +31,14 @@ import { AdminLayout } from '@/modules/admin/admin-layout';
 import { AdminDashboardPage } from '@/modules/admin/admin-dashboard-page';
 import { AdminReservationsPage } from '@/modules/admin/admin-reservations-page';
 import { AdminReservationDetailPage } from '@/modules/admin/admin-reservation-detail-page';
+import { AdminDriversPage } from '@/modules/admin/admin-drivers-page';
+import { AdminCustomersPage } from '@/modules/admin/admin-customers-page';
+import { AdminRatingsPage } from '@/modules/admin/admin-ratings-page';
+import { AdminContactMessagesPage } from '@/modules/admin/admin-contact-messages-page';
+import { AdminFaqsPage } from '@/modules/admin/admin-faqs-page';
+import { AdminRecipientsPage } from '@/modules/admin/admin-recipients-page';
+import { AdminAdminsPage } from '@/modules/admin/admin-admins-page';
+import { AdminSettingsPage } from '@/modules/admin/admin-settings-page';
 
 export const router = createBrowserRouter([
   // --- Public ---
@@ -107,6 +115,14 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminDashboardPage /> },
       { path: 'rezervasyonlar', element: <AdminReservationsPage /> },
       { path: 'rezervasyonlar/:id', element: <AdminReservationDetailPage /> },
+      { path: 'soforler', element: <AdminDriversPage /> },
+      { path: 'musteriler', element: <AdminCustomersPage /> },
+      { path: 'degerlendirmeler', element: <AdminRatingsPage /> },
+      { path: 'mesajlar', element: <AdminContactMessagesPage /> },
+      { path: 'sss', element: <AdminFaqsPage /> },
+      { path: 'bildirim-alicilari', element: <AdminRecipientsPage /> },
+      { path: 'yoneticiler', element: <AdminAdminsPage /> },
+      { path: 'ayarlar', element: <AdminSettingsPage /> },
     ],
   },
 ]);

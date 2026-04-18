@@ -1,5 +1,8 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { CalendarRange, LayoutDashboard, LogOut, Menu, ShieldCheck, X } from 'lucide-react';
+import {
+  CalendarRange, LayoutDashboard, LogOut, Menu, ShieldCheck, X,
+  Users, UserCog, HelpCircle, Star, Mail, Settings, Bell,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/auth-store';
@@ -9,6 +12,14 @@ import { cn } from '@/lib/utils';
 const nav = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/rezervasyonlar', label: 'Rezervasyonlar', icon: CalendarRange, end: false },
+  { to: '/admin/soforler', label: 'Şoförler', icon: UserCog, end: false },
+  { to: '/admin/musteriler', label: 'Müşteriler', icon: Users, end: false },
+  { to: '/admin/degerlendirmeler', label: 'Değerlendirmeler', icon: Star, end: false },
+  { to: '/admin/mesajlar', label: 'İletişim Mesajları', icon: Mail, end: false },
+  { to: '/admin/sss', label: 'SSS', icon: HelpCircle, end: false },
+  { to: '/admin/bildirim-alicilari', label: 'Bildirim E-postaları', icon: Bell, end: false },
+  { to: '/admin/yoneticiler', label: 'Yöneticiler', icon: ShieldCheck, end: false },
+  { to: '/admin/ayarlar', label: 'Sistem Ayarları', icon: Settings, end: false },
 ];
 
 export function AdminLayout() {
@@ -43,6 +54,7 @@ export function AdminLayout() {
               className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent"
               onClick={() => setOpen((v) => !v)}
               aria-label="Menü"
+              aria-expanded={open}
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -52,7 +64,7 @@ export function AdminLayout() {
 
       <div className="container py-6 grid gap-6 md:grid-cols-[240px_1fr]">
         <aside className={cn('md:block', open ? 'block' : 'hidden')}>
-          <nav className="flex flex-col gap-1">
+          <nav className="flex flex-col gap-0.5 md:sticky md:top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2" aria-label="Admin menü">
             {nav.map((i) => (
               <NavLink
                 key={i.to}
@@ -61,12 +73,12 @@ export function AdminLayout() {
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                     isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                   )
                 }
               >
-                <i.icon className="size-4" aria-hidden />
+                <i.icon className="size-4 shrink-0" aria-hidden />
                 {i.label}
               </NavLink>
             ))}

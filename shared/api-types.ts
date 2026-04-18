@@ -144,3 +144,135 @@ export interface ContactFormRequest {
   subject: string;
   message: string;
 }
+
+// ---------- Admin management ----------
+export interface CreateDriverRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  initialPassword?: string;
+}
+
+export interface UpdateDriverRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface DriverListItem {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  status: 'Active' | 'Inactive';
+  averageRating: number;
+  totalTrips: number;
+  mustChangePassword: boolean;
+  createdAtUtc: string;
+}
+
+export interface RecentRatingDto {
+  reservationId: string;
+  score: number;
+  comment?: string | null;
+  createdAtUtc: string;
+  isFlagged: boolean;
+}
+
+export interface DriverDetail extends DriverListItem {
+  activeAssignmentCount: number;
+  recentRatings: RecentRatingDto[];
+}
+
+export interface RecipientDto {
+  id: string;
+  email: string;
+  isActive: boolean;
+}
+
+export interface FaqAdminDto {
+  id: string;
+  question: string;
+  answer: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAtUtc: string;
+}
+
+export interface CreateFaqRequest {
+  question: string;
+  answer: string;
+  displayOrder: number;
+}
+
+export interface UpdateFaqRequest extends CreateFaqRequest {
+  isActive: boolean;
+}
+
+export interface CustomerListItem {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  isActive: boolean;
+  reservationCount: number;
+  createdAtUtc: string;
+}
+
+export interface RecentReservationDto {
+  id: string;
+  status: ReservationStatusLiteral;
+  reservationDateTimeUtc: string;
+  address: string;
+}
+
+export interface CustomerDetail extends CustomerListItem {
+  emailConfirmed: boolean;
+  recentReservations: RecentReservationDto[];
+}
+
+export interface ContactMessageDto {
+  id: string;
+  firstName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  isRead: boolean;
+  readAtUtc?: string | null;
+  createdAtUtc: string;
+}
+
+export interface AdminRatingListItem {
+  id: string;
+  reservationId: string;
+  score: number;
+  comment?: string | null;
+  customerName: string;
+  driverName: string;
+  isFlagged: boolean;
+  flaggedReason?: string | null;
+  createdAtUtc: string;
+}
+
+export interface AdminUserDto {
+  id: string;
+  fullName: string;
+  email: string;
+  createdAtUtc: string;
+}
+
+export interface CreateAdminRequest {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+export interface SystemSettingDto {
+  key: string;
+  value: string;
+  isSensitive: boolean;
+}
