@@ -12,10 +12,11 @@
     "test": "pnpm -r run test",
     "test:e2e": "pnpm -C frontend run test:e2e",
     "generate:types": "pnpm -C frontend run generate:types",
-    "backend:build": "dotnet build backend/PickMe.sln",
-    "backend:test": "dotnet test backend/PickMe.sln",
+    "backend:build": "dotnet build backend/PickMe.slnx",
+    "backend:test": "dotnet test backend/PickMe.slnx",
     "backend:migrate": "dotnet ef database update --project backend/src/PickMe.Infrastructure --startup-project backend/src/PickMe.Api",
-    "backend:run": "dotnet run --project backend/src/PickMe.Api"
+    "backend:run": "dotnet run --project backend/src/PickMe.Api",
+    "openapi:fetch": "curl -sf http://localhost:5080/swagger/v1/swagger.json -o shared/openapi.json && echo OpenAPI schema fetched → shared/openapi.json"
   },
   "devDependencies": {
     "prettier": "^3.3.3"

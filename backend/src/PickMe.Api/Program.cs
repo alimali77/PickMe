@@ -1,4 +1,5 @@
 using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PickMe.Api.Common;
@@ -27,6 +28,34 @@ builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+// Swagger UI + OpenAPI JSON (NSwag CLI bu şemayı okuyup shared/api-types.ts üretir)
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "Pick Me API",
+        Version = "v1",
+        Description = "Pick Me — Şoför & Vale rezervasyon platformu REST API. Auth için Authorize butonuna `Bearer <token>` giriniz.",
+    });
+
+    // JWT Bearer scheme tanımı — Swagger UI'da "Authorize" butonu gelir.
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "JWT Bearer token — `Bearer <token>` formatında giriniz.",
+    });
+    // Global security requirement (her endpoint bearer kabul eder — auth'suz endpoint'ler
+    // controller'da [AllowAnonymous] ile işaretli, Swagger UI için şema önemli değil).
+    c.AddSecurityRequirement(_ => new Microsoft.OpenApi.OpenApiSecurityRequirement
+    {
+        [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer")] = new List<string>(),
+    });
+});
 
 var corsOrigins = (builder.Configuration["CORS_ORIGINS"]
     ?? Environment.GetEnvironmentVariable("CORS_ORIGINS")
@@ -75,9 +104,18 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
+// Swagger her ortamda açık — anon olduğu için sadece şema bilgisi verir,
+// prod'da endpoint'leri reverse-proxy ile IP kısıtlayıp kapatabilirsiniz.
+app.UseSwagger(c => c.RouteTemplate = "swagger/{documentName}/swagger.json");
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pick Me API v1");
+        c.DocumentTitle = "Pick Me API";
+        c.RoutePrefix = "swagger";
+    });
 }
 else
 {
@@ -91,6 +129,19 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timeUtc = DateTime.UtcNow }));
+
+// Hangfire dashboard — admin-only (JWT rol kontrolü)
+var hangfireEnabled = bool.Parse(builder.Configuration["HANGFIRE_ENABLED"] ?? "true");
+if (hangfireEnabled)
+{
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new AdminOnlyHangfireFilter()],
+        AppPath = "/admin",
+        DashboardTitle = "Pick Me — Job Queue",
+        StatsPollingInterval = 5_000,
+    });
+}
 
 // Startup: migration + initial admin seed
 await PickMe.Infrastructure.Persistence.DatabaseInitializer.InitializeAsync(app.Services);

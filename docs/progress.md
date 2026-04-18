@@ -179,7 +179,52 @@
 
 **Toplam: 127 otomatik test yeşil (61 unit + 3 arch + 51 integration + 12 frontend) + 36 endpoint + 14 tablo canlı DB.**
 
-## Kalan İş (Brief Bölüm 20 + Plan Faz 6-9)
+### ✅ Faz 6 — OpenAPI / Swagger + Hangfire
+
+**Swagger UI:**
+- Swashbuckle.AspNetCore 10 + Microsoft.OpenApi 2.x (yeni API'ye migrate).
+- `http://localhost:5080/swagger` — tüm endpoint'ler tip-güvenli şemayla listelenir.
+- JWT Bearer security definition — Swagger UI "Authorize" butonundan token paste edilebilir.
+- `shared/nswag.json` — NSwag CLI config; `pnpm run openapi:fetch` ile schema çekilip TS generate edilebilir.
+
+**Hangfire durable mail queue (brief Faz 4'ten ertelenen):**
+- `HangfireEmailQueue` `IEmailQueue` implementation — SQL Server'da persist.
+- `EmailJobRunner.SendAsync` → `[AutomaticRetry(3, delays 5dk/30dk/2h)]`.
+- Her gönderim denemesi `EmailLogs` tablosuna audit'lenir.
+- `/hangfire` dashboard — `AdminOnlyHangfireFilter` JWT rol kontrolü.
+- IIS app pool recycle sonrasında job'lar DB'den devam eder.
+- `HANGFIRE_ENABLED=false` ile test ortamlarında devre dışı bırakılabilir (fallback in-memory queue).
+
+### ✅ Faz 7 — Playwright E2E iskelet
+
+- `frontend/playwright.config.ts` — webServer auto-start, trace/screenshot/video on fail.
+- 9 temel senaryo:
+  - `public-site.spec.ts`: ana sayfa, WhatsApp FAB, SSS accordion, iletişim validation, 404.
+  - `auth-flow.spec.ts`: kayıt Zod validation, login sayfası, admin login → dashboard, unauthorized /admin redirect.
+- `tests/e2e/TODO.md` — brief §16-E'deki kalan 10 senaryo için task listesi + helper fixture önerileri.
+- `@playwright/test` devDep olarak eklendi; `pnpm -C frontend exec playwright install chromium` ile kurulum.
+
+### ✅ Faz 8 — IIS deployment artifacts
+
+- `infra/iis/web.api.config` — AspNetCoreModuleV2 inprocess + security headers + env var şablonu.
+- `infra/iis/web.web.config` — HTTPS redirect + `/api/*` + `/hangfire/*` + `/swagger/*` ARR reverse proxy + SPA fallback + strict CSP + HSTS.
+- `infra/scripts/deploy.ps1` — dotnet publish + pnpm build + robocopy + app pool recycle + smoke test.
+- `infra/scripts/backup-db.ps1` — Full/Log, compressed, 30-gün retention.
+- `infra/scripts/restore-db.ps1` — dry-run + schema doğrulama.
+- `infra/scripts/smoke-test.ps1` — 20 endpoint ping (anon + admin login + korumalı endpoints).
+- `infra/scripts/install-scheduled-tasks.ps1` — Task Scheduler: günlük full backup + saatlik tx log + aylık restore dry-run.
+
+### ✅ Faz 9 — Dokümantasyon
+
+- `README.md` — mimari tablosu, LocalDB quickstart, Faz durum tablosu.
+- `docs/runbook.md` — sunucu hazırlık, deploy, backup, restore, incident checklist.
+- `docs/admin-guide.md` — admin panelin 10 bölümü için adım adım kılavuz.
+- `docs/driver-guide.md` — mobil odaklı şoför kılavuzu + sorun giderme.
+- `docs/architecture.md` — katman diagramı, veri modeli, state machine, auth akışı.
+
+**Kümülatif durum: 127 otomatik test yeşil + 36+ endpoint + Swagger UI + Hangfire dashboard + complete deploy toolkit + 5 doküman.**
+
+## Kalan İş (Brief Bölüm 20'ye karşı)
 
 Plan dosyasındaki yol haritası:
 

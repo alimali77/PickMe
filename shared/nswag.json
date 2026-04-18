@@ -1,0 +1,30 @@
+{
+  "runtime": "Net100",
+  "defaultVariables": null,
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "http://localhost:5080/swagger/v1/swagger.json",
+      "output": null,
+      "newLineBehavior": "Auto"
+    }
+  },
+  "codeGenerators": {
+    "openApiToTypeScriptClient": {
+      "className": "PickMeApiClient",
+      "moduleName": "",
+      "namespace": "",
+      "typeScriptVersion": 5.6,
+      "template": "Fetch",
+      "promiseType": "Promise",
+      "dateTimeType": "string",
+      "nullValue": "Undefined",
+      "generateClientClasses": false,
+      "generateClientInterfaces": false,
+      "generateDtoTypes": true,
+      "operationGenerationMode": "MultipleClientsFromOperationId",
+      "markOptionalProperties": true,
+      "generateDefaultValues": false,
+      "output": "api-types.generated.ts"
+    }
+  }
+}

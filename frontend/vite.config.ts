@@ -16,7 +16,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'https://localhost:5001',
+        target: 'http://localhost:5110',
         changeOrigin: true,
         secure: false,
       },
@@ -26,5 +26,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // Playwright E2E spec'leri Vitest tarafından çalıştırılmaz — ayrı bir runner kullanır.
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
   },
 });
