@@ -39,6 +39,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Pick Me — Şoför & Vale rezervasyon platformu REST API. Auth için Authorize butonuna `Bearer <token>` giriniz.",
     });
 
+    // Nested tip adı çakışmalarını engelle (birden fazla controller'da SetActiveRequest
+    // nested record'u var — tam tip adıyla ayırt et).
+    c.CustomSchemaIds(type => type.FullName?.Replace('+', '.') ?? type.Name);
+
     // JWT Bearer scheme tanımı — Swagger UI'da "Authorize" butonu gelir.
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
     {
@@ -49,12 +53,8 @@ builder.Services.AddSwaggerGen(c =>
         In = Microsoft.OpenApi.ParameterLocation.Header,
         Description = "JWT Bearer token — `Bearer <token>` formatında giriniz.",
     });
-    // Global security requirement (her endpoint bearer kabul eder — auth'suz endpoint'ler
-    // controller'da [AllowAnonymous] ile işaretli, Swagger UI için şema önemli değil).
-    c.AddSecurityRequirement(_ => new Microsoft.OpenApi.OpenApiSecurityRequirement
-    {
-        [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer")] = new List<string>(),
-    });
+    // AddSecurityRequirement Microsoft.OpenApi 2.x'te sorunlu (Swashbuckle 10 ile uyumsuz
+    // çağrı imzası). Kullanıcı "Authorize" butonu ile tokenı tanımlar, UI auto-apply yapar.
 });
 
 var corsOrigins = (builder.Configuration["CORS_ORIGINS"]
