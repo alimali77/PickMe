@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.33.0'
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore
+        run: dotnet restore backend/PickMe.slnx
+      - name: Build
+        run: dotnet build backend/PickMe.slnx --no-restore --configuration Release
+      - name: Unit tests
+        run: dotnet test backend/tests/PickMe.UnitTests/PickMe.UnitTests.csproj --no-build --configuration Release --logger "trx"
+      - name: Architecture tests
+        run: dotnet test backend/tests/PickMe.ArchitectureTests/PickMe.ArchitectureTests.csproj --no-build --configuration Release --logger "trx"
+      - name: Integration tests (Testcontainers-MSSQL)
+        run: dotnet test backend/tests/PickMe.IntegrationTests/PickMe.IntegrationTests.csproj --no-build --configuration Release --logger "trx"
+
+  frontend:
+    name: Frontend (Vite/React)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm -C frontend run lint
+      - name: Type-check
+        run: pnpm -C frontend run typecheck
+      - name: Unit tests
+        run: pnpm -C frontend run test -- --run
+      - name: Build
+        run: pnpm -C frontend run build
+
+  openapi-drift:
+    name: OpenAPI type drift check
+    runs-on: windows-latest
+    needs: [backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '${{ env.DOTNET_VERSION }}' }
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Generate types
+        run: pnpm run generate:types
+      - name: Drift check
+        shell: bash
+        run: |
+          if ! git diff --exit-code shared/api-types.ts; then
+            echo "::error::shared/api-types.ts out of sync with backend OpenAPI schema. Run 'pnpm run generate:types' and commit."
+            exit 1
+          fi
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          SA_PASSWORD: 'YourStrong!Passw0rd'
+          MSSQL_PID: Developer
+        ports: ['1433:1433']
+      smtp4dev:
+        image: rnwood/smtp4dev:latest
+        ports:
+          - '2525:25'
+          - '5050:80'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '${{ env.DOTNET_VERSION }}' }
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm -C frontend exec playwright install --with-deps chromium
+      - name: E2E suite
+        run: pnpm -C frontend run test:e2e
+        env:
+          DB_CONNECTION_STRING: 'Server=localhost,1433;Database=PickMeDb_E2E;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;'
+          SMTP_HOST: localhost
+          SMTP_PORT: 2525

@@ -1,0 +1,17 @@
+{
+  "name": "@pickme/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./validation": "./validation.ts",
+    "./constants": "./constants.ts",
+    "./api-types": "./api-types.ts",
+    "./rules": "./validation-rules.json"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}

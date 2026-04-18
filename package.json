@@ -1,0 +1,23 @@
+{
+  "name": "pickme-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pick Me — Şoför & Vale rezervasyon platformu (monorepo)",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm -C frontend run dev",
+    "build": "pnpm -C frontend run build",
+    "lint": "pnpm -C frontend run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "test": "pnpm -r run test",
+    "test:e2e": "pnpm -C frontend run test:e2e",
+    "generate:types": "pnpm -C frontend run generate:types",
+    "backend:build": "dotnet build backend/PickMe.sln",
+    "backend:test": "dotnet test backend/PickMe.sln",
+    "backend:migrate": "dotnet ef database update --project backend/src/PickMe.Infrastructure --startup-project backend/src/PickMe.Api",
+    "backend:run": "dotnet run --project backend/src/PickMe.Api"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}

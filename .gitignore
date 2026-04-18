@@ -1,0 +1,52 @@
+# ---------- Node / pnpm ----------
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+
+# ---------- .NET ----------
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+.vs/
+*.vsix
+project.lock.json
+artifacts/
+
+# ---------- Environments ----------
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# ---------- Build outputs ----------
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/.vike/
+backend/**/publish/
+backend/TestResults/
+
+# ---------- IDE ----------
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Logs ----------
+logs/
+*.log
+
+# ---------- Generated ----------
+shared/api-types.ts.tmp

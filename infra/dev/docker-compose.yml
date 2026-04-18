@@ -1,0 +1,38 @@
+name: pickme-dev
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pickme-mssql
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'ChangeMe_Str0ng!'
+      MSSQL_PID: Developer
+    ports:
+      - '1433:1433'
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "ChangeMe_Str0ng!" -C -Q "SELECT 1" || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  smtp4dev:
+    image: rnwood/smtp4dev:latest
+    container_name: pickme-smtp4dev
+    ports:
+      - '2525:25'   # SMTP
+      - '5050:80'   # Web UI (http://localhost:5050)
+    environment:
+      - ServerOptions__HostName=pickme-smtp4dev
+    volumes:
+      - smtp4dev-data:/smtp4dev
+
+volumes:
+  mssql-data:
+  smtp4dev-data:

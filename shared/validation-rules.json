@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Frontend (Zod) ve backend (FluentValidation) için tek kaynak doğrulama kural tablosu.",
+  "user": {
+    "firstName": { "minLength": 2, "maxLength": 50 },
+    "lastName": { "minLength": 2, "maxLength": 50 },
+    "email": { "maxLength": 256, "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" },
+    "phone": {
+      "regex": "^(\\+90|0)?5[0-9]{9}$",
+      "description": "Türkiye cep telefonu: opsiyonel +90 veya 0, ardından 5 ve 9 haneli numara."
+    },
+    "password": {
+      "minLength": 8,
+      "maxLength": 128,
+      "requiresUppercase": true,
+      "requiresLowercase": true,
+      "requiresDigit": true
+    }
+  },
+  "reservation": {
+    "note": { "maxLength": 500 },
+    "address": { "minLength": 5, "maxLength": 300 },
+    "lat": { "min": 35.8, "max": 42.2, "description": "Türkiye enlem sınırı" },
+    "lng": { "min": 25.6, "max": 44.9, "description": "Türkiye boylam sınırı" },
+    "minMinutesAhead": 30,
+    "stepMinutes": 15
+  },
+  "rating": {
+    "scoreMin": 1,
+    "scoreMax": 5,
+    "commentMaxLength": 500,
+    "editWindowHours": 24
+  },
+  "contact": {
+    "subjectMaxLength": 120,
+    "messageMinLength": 10,
+    "messageMaxLength": 2000
+  },
+  "security": {
+    "loginMaxFailedAttempts": 5,
+    "loginLockoutMinutes": 15,
+    "emailVerificationTokenHours": 24,
+    "passwordResetTokenMinutes": 60,
+    "jwtAccessTtlMinutes": 60,
+    "jwtRefreshTtlDays": 7,
+    "bcryptCost": 12
+  },
+  "messages": {
+    "firstNameRequired": "Ad boş bırakılamaz.",
+    "firstNameLength": "Ad 2-50 karakter arasında olmalıdır.",
+    "lastNameRequired": "Soyad boş bırakılamaz.",
+    "lastNameLength": "Soyad 2-50 karakter arasında olmalıdır.",
+    "emailRequired": "E-posta boş bırakılamaz.",
+    "emailFormat": "Geçerli bir e-posta adresi giriniz.",
+    "phoneRequired": "Telefon numarası boş bırakılamaz.",
+    "phoneFormat": "Geçerli bir Türkiye cep telefonu numarası giriniz (ör: 05551234567).",
+    "passwordRequired": "Şifre boş bırakılamaz.",
+    "passwordLength": "Şifre en az 8 karakter olmalıdır.",
+    "passwordComplexity": "Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.",
+    "passwordConfirmMismatch": "Şifreler eşleşmiyor.",
+    "kvkkRequired": "Devam etmek için KVKK metnini onaylamanız gerekir.",
+    "loginInvalid": "E-posta veya şifre hatalı.",
+    "accountLocked": "Hesabınız 15 dakika kilitlendi, lütfen daha sonra tekrar deneyin.",
+    "emailNotVerified": "Lütfen önce e-posta adresinizi doğrulayın.",
+    "reservationDateTooSoon": "Rezervasyon şu andan en az 30 dakika sonraya olmalıdır.",
+    "reservationAddressRequired": "Lütfen adresi listeden seçiniz.",
+    "reservationOutsideTurkey": "Konum Türkiye sınırları içinde olmalıdır.",
+    "noteTooLong": "Not en fazla 500 karakter olabilir.",
+    "ratingScoreRange": "Puan 1 ile 5 arasında olmalıdır.",
+    "ratingAlreadyGiven": "Bu rezervasyon için zaten puan verdiniz.",
+    "ratingEditWindowExpired": "Puan oluşturulduktan 24 saat sonra düzenlenemez.",
+    "invalidStateTransition": "Bu işlem rezervasyonun mevcut durumunda yapılamaz."
+  }
+}
